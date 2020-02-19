@@ -5,40 +5,33 @@ using System.Collections.Generic;
 
 namespace Chromia.Postchain.Client.GTX
 {
-
     public class Gtx
     {
         private string BlockchainID;
-        private List<dynamic> Operations;
+        private List<object[]> Operations;
         private List<byte[]> Signers;
         private List<byte[]> Signatures;
 
         public Gtx(string blockchainRID)
         {
             this.BlockchainID = blockchainRID;
-            this.Operations = new List<dynamic>();
+            this.Operations = new List<object[]>();
             this.Signers = new List<byte[]>();
             this.Signatures = new List<byte[]>();
         }
 
-        public Gtx AddOperationToGtx(string opName, dynamic[] args)
+        public Gtx AddOperationToGtx(string opName, object[] args)
         {
             if(this.Signatures.Count != 0)
             {
                 throw new Exception("Cannot add function calls to an already signed gtx");
             }
-
-            if (args is null) {
-                args = new dynamic[]{null};
-            }
-            var newOperation = new List<dynamic>(){opName, args};
-
-            this.Operations.Add(newOperation.ToArray());
-   
+            object[] opArr = { opName, args };
+            this.Operations.Add(opArr);
             return this;
         }
 
-        public static GTXValue ArgToGTXValue(dynamic arg)
+        public static GTXValue ArgToGTXValue(object arg)
         {
             var gtxValue = new GTXValue();
             
@@ -46,12 +39,12 @@ namespace Chromia.Postchain.Client.GTX
             {
                 gtxValue.Choice = GTXValueChoice.Null;
             }
-            else if (ASN1Util.IsNumericType(arg))
+            else if (arg.IsNumericType())
             {
                 try
                 {
                     gtxValue.Choice = GTXValueChoice.Integer;
-                    gtxValue.Integer = Convert.ChangeType(arg, typeof(long));
+                    gtxValue.Integer = Convert.ToInt64(arg);
                 }
                 catch
                 {
@@ -68,21 +61,22 @@ namespace Chromia.Postchain.Client.GTX
                 gtxValue.Choice = GTXValueChoice.String;
                 gtxValue.String = (string) arg;
             }
-            else if (arg is dynamic[])
+            else if (arg is object[])
             {
+                var array = (object[])arg;
                 gtxValue.Choice = GTXValueChoice.Array;
 
                 gtxValue.Array = new List<GTXValue>();
-                foreach (var subArg in arg)
+                foreach (var subArg in array)
                 {
                     gtxValue.Array.Add(ArgToGTXValue(subArg));
                 }
             }
-            else if (arg is Dictionary<string, dynamic>)
+            else if (arg is Dictionary<string, object>)
             {
                 gtxValue.Choice = GTXValueChoice.Dict;
 
-                var dict = (Dictionary<string, dynamic>) arg;
+                var dict = (Dictionary<string, object>) arg;
 
                 gtxValue.Dict = new List<DictPair>();
                 foreach (var dictPair in dict)
@@ -129,9 +123,9 @@ namespace Chromia.Postchain.Client.GTX
             return encodedBuffer;
         }
 
-        private dynamic[] GetGtvTxBody(bool asHexString = false)
+        private object[] GetGtvTxBody(bool asHexString = false)
         {
-            var body = new List<dynamic>();
+            var body = new List<object>();
             body.Add(Util.HexStringToBuffer(this.BlockchainID));
             body.Add(this.Operations.ToArray());
             body.Add(this.Signers.ToArray());
@@ -163,7 +157,7 @@ namespace Chromia.Postchain.Client.GTX
 
         public string Serialize()
         {
-            var gtxBody = new List<dynamic[]>();
+            var gtxBody = new List<object>();
 
             gtxBody.Add(GetGtvTxBody());
             gtxBody.Add(this.Signatures.ToArray());

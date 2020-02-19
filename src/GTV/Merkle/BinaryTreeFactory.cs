@@ -4,7 +4,7 @@ namespace Chromia.Postchain.Client.GTV.Merkle
 {
     public class BinaryTreeFactory
     {
-        public BinaryTreeElement HandleLeaf(dynamic leaf, PathSet paths, bool IsRoot = false)
+        public BinaryTreeElement HandleLeaf(object leaf, PathSet paths, bool IsRoot = false)
         {
             if (paths.IsEmpty() && !IsRoot)
             {
@@ -21,7 +21,7 @@ namespace Chromia.Postchain.Client.GTV.Merkle
             return new PathSet(new Path[0]);
         }
 
-        private BinaryTreeElement InnerHandleLeaf(dynamic leaf, PathSet paths)
+        private BinaryTreeElement InnerHandleLeaf(object leaf, PathSet paths)
         {
             if (leaf is null)
             {
@@ -39,13 +39,13 @@ namespace Chromia.Postchain.Client.GTV.Merkle
             {
                 return this.HandlePrimitiveLeaf(leaf, paths); 
             }
-            else if (leaf.GetType().IsArray)
+            else if (leaf is object[])
             {
-                return this.BuildFromArray(leaf, paths); 
+                return this.BuildFromArray((object[])leaf, paths); 
             }
-            else if (leaf.GetType().IsGenericType && leaf.GetType().GetGenericTypeDefinition() == typeof(Dictionary<,>))
+            else if (leaf is Dictionary<string, object>)
             {
-                return this.BuildFromDictionary(leaf, paths); 
+                return this.BuildFromDictionary((Dictionary<string, object> )leaf, paths); 
             }
             else
             {
@@ -53,7 +53,7 @@ namespace Chromia.Postchain.Client.GTV.Merkle
             }
         }
 
-        private BinaryTreeElement HandlePrimitiveLeaf(dynamic leaf, PathSet paths)
+        private BinaryTreeElement HandlePrimitiveLeaf(object leaf, PathSet paths)
         {
             var pathElem = paths.GetPathLeafOrElseAnyCurrentPathElement();
             
@@ -110,24 +110,25 @@ namespace Chromia.Postchain.Client.GTV.Merkle
             return this.BuildHigherLayer(layer + 1, returnArray);
         }
 
-        public BinaryTree Build(dynamic[] data)
+        public BinaryTree Build(object data)
         {
             return this.BuildWithPath(data, this.GetEmptyPathSet());
         }
 
-        public BinaryTree BuildWithPath(dynamic[] data, PathSet paths)
+        public BinaryTree BuildWithPath(object data, PathSet paths)
         {
             var result = this.HandleLeaf(data, paths, true);
             return new BinaryTree(result);
         }
 
-        private ArrayHeadNode<dynamic[]> BuildFromArray(dynamic[] array, PathSet paths)
+        private ArrayHeadNode<object[]> BuildFromArray(object[] array, PathSet paths)
         {
             var pathElem = paths.GetPathLeafOrElseAnyCurrentPathElement();
 
             if (array.Length == 0)
             {
-                return new ArrayHeadNode<dynamic[]>(new EmptyLeaf(), new EmptyLeaf(), array, 0, pathElem);
+                return new ArrayHeadNode<object
+        []>(new EmptyLeaf(), new EmptyLeaf(), array, 0, pathElem);
             }
 
             var leafArray = this.BuildLeafElements(array, paths);
@@ -138,7 +139,8 @@ namespace Chromia.Postchain.Client.GTV.Merkle
             if (orgRoot is Node)
             {
                 var nodeRoot = (Node) orgRoot;
-                return new ArrayHeadNode<dynamic[]>(nodeRoot.Left, nodeRoot.Right, array, array.Length, pathElem);
+                return new ArrayHeadNode<object
+        []>(nodeRoot.Left, nodeRoot.Right, array, array.Length, pathElem);
             }
             
             if (orgRoot is Leaf)
@@ -151,7 +153,7 @@ namespace Chromia.Postchain.Client.GTV.Merkle
             }
         }
 
-        private ArrayHeadNode<dynamic[]> BuildFromOneLeaf(dynamic[] array, BinaryTreeElement orgRoot, PathElement pathElem)
+        private ArrayHeadNode<object []> BuildFromOneLeaf(object[] array, BinaryTreeElement orgRoot, PathElement pathElem)
         {
             if (array.Length > 1)
             {
@@ -159,11 +161,12 @@ namespace Chromia.Postchain.Client.GTV.Merkle
             }
             else
             {
-                return new ArrayHeadNode<dynamic[]>(orgRoot, new EmptyLeaf(), array, array.Length, pathElem);
+                return new ArrayHeadNode<object
+        []>(orgRoot, new EmptyLeaf(), array, array.Length, pathElem);
             }
         }
 
-        private List<BinaryTreeElement> BuildLeafElements(dynamic[] leafList, PathSet paths)
+        private List<BinaryTreeElement> BuildLeafElements(object[] leafList, PathSet paths)
         {
             var leafArray = new List<BinaryTreeElement>();
 
@@ -179,14 +182,14 @@ namespace Chromia.Postchain.Client.GTV.Merkle
             return leafArray;
         }
 
-        private DictHeadNode<Dictionary<string,dynamic>> BuildFromDictionary(Dictionary<string,dynamic> dict, PathSet paths)
+        private DictHeadNode<Dictionary<string,object >> BuildFromDictionary(Dictionary<string,object> dict, PathSet paths)
         {
             var pathElem = paths.GetPathLeafOrElseAnyCurrentPathElement();
 
             var keys = new List<string>(dict.Keys);
             if (keys.Count == 0)
             {
-                return new DictHeadNode<Dictionary<string,dynamic>>(new EmptyLeaf(), new EmptyLeaf(), dict, 0, pathElem);
+                return new DictHeadNode<Dictionary<string,object>>(new EmptyLeaf(), new EmptyLeaf(), dict, 0, pathElem);
             }
             keys.Sort();
 
@@ -198,7 +201,7 @@ namespace Chromia.Postchain.Client.GTV.Merkle
             if (orgRoot is Node)
             {
                 var nodeRoot = (Node) orgRoot;
-                return new DictHeadNode<Dictionary<string,dynamic>>(nodeRoot.Left, nodeRoot.Right, dict, keys.Count, pathElem);
+                return new DictHeadNode<Dictionary<string,object>>(nodeRoot.Left, nodeRoot.Right, dict, keys.Count, pathElem);
             }
             else
             {
@@ -206,7 +209,7 @@ namespace Chromia.Postchain.Client.GTV.Merkle
             }
         }
 
-        private List<BinaryTreeElement> BuildLeafElementFromDict(List<string> keys, Dictionary<string, dynamic> dict, PathSet paths)
+        private List<BinaryTreeElement> BuildLeafElementFromDict(List<string> keys, Dictionary<string, object > dict, PathSet paths)
         {
             var leafArray = new List<BinaryTreeElement>();
             var onlyDictPaths = paths.KeepOnlyDictPaths();

@@ -50,10 +50,10 @@ namespace Chromia.Postchain.Client.GTX
         ///<param name = "queryName">Name of the query to be called.</param>
         ///<param name = "queryObject">List of parameter pairs of query parameter name and its value. For example {"city", "Hamburg"}.</param>
         ///<returns>Task, which returns the query return content.</returns>
-        public async Task<(T content, PostchainErrorControl control)> Query<T> (string queryName, params dynamic[] queryObject)
+        public async Task<(object content, PostchainErrorControl control)> Query (string queryName, params object[] queryObject)
         {
             var queryContent = await this.RestApiClient.Query(queryName, queryObject);
-
+            /*
             PostchainErrorControl queryError = new PostchainErrorControl();
             try
             {
@@ -86,20 +86,10 @@ namespace Chromia.Postchain.Client.GTX
                 queryError.Error = true;
                 queryError.ErrorMessage = e.Message;
             }
-
-            return (contentObject, queryError);
+            */
+            return (1, new PostchainErrorControl());
         } 
 
-        /*
-        [Obsolete]
-        public Transaction TransactionFromRawTransaction(byte[] rawTransaction)
-        {
-            Gtx gtx = Gtx.Deserialize(rawTransaction);
 
-            Transaction req = new Transaction(gtx, this.RestApiClient);
-
-            return req;
-        }
-        */
     }
 }

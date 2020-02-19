@@ -3,12 +3,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
-using Flurl;
-using Flurl.Http;
-using Newtonsoft.Json;
+using UnityEngine.Networking;
+//using Newtonsoft.Json;
 
 namespace Chromia.Postchain.Client
 {
+
+
     public class RESTClient
     {
         private string UrlBase;
@@ -21,24 +22,25 @@ namespace Chromia.Postchain.Client
         ///<param name = "blockchainRID">RID of blockchain.</param>
         public RESTClient(string urlBase, string blockchainRID)
         {
+            if (urlBase.Last() != '/') urlBase = urlBase + "/";
             this.UrlBase = urlBase;
             this.BlockchainRID = blockchainRID;
         }
 
-        public async Task<dynamic> PostTransaction(string serializedTransaction)
+        public async Task<object> PostTransaction(string serializedTransaction)
         {
             string jsonString = String.Format(@"{{""tx"": ""{0}""}}", serializedTransaction);
-            
+
             return await Post(this.UrlBase, "tx/" + this.BlockchainRID, jsonString);
         }
 
-        private async Task<dynamic> Status(string messageHash)
+        private async Task<object> Status(string messageHash)
         {
             ValidateMessageHash(messageHash);
             return await Get(this.UrlBase, "tx/" + this.BlockchainRID + "/" + messageHash + "/status");
         }
 
-        public async Task<dynamic> Query(string queryName, params dynamic[] queryObject)
+        public async Task<object> Query(string queryName, params object[] queryObject)
         {
             string queryString = BuildQuery(queryObject);
             queryString = AppendQueryName(queryName, queryString);
@@ -60,8 +62,9 @@ namespace Chromia.Postchain.Client
             }
         }
 
-        private static string BuildQuery(dynamic queryObject, int layer = 0)
+        private static string BuildQuery(object queryObject, int layer = 0)
         {
+            /*
             if (IsTuple(queryObject.GetType()))
             {
                 if (layer < 2)
@@ -90,17 +93,17 @@ namespace Chromia.Postchain.Client
                 {
                     return "";
                 }
-                else if(layer != 0 && queryObject.Length == 0)
+                else if (layer != 0 && queryObject.Length == 0)
                 {
                     return "[]";
                 }
-                
-                string queryString  = "";
-                if(layer == 0)
+
+                string queryString = "";
+                if (layer == 0)
                 {
                     queryString = "{";
                 }
-                else 
+                else
                 {
                     queryString = "[";
                 }
@@ -110,11 +113,11 @@ namespace Chromia.Postchain.Client
                     queryString += BuildQuery(subQueryParam, layer + 1) + ", ";
                 }
 
-                if(layer == 0)
+                if (layer == 0)
                 {
                     queryString = queryString.Remove(queryString.Length - 2) + "}";
                 }
-                else 
+                else
                 {
                     queryString = queryString.Remove(queryString.Length - 2) + "]";
                 }
@@ -126,12 +129,13 @@ namespace Chromia.Postchain.Client
             }
             else if (queryObject is string)
             {
-                return String.Format(@"""{0}""", (string) queryObject);
+                return String.Format(@"""{0}""", (string)queryObject);
             }
             else
             {
                 throw new Exception("Unknown query data type " + queryObject.GetType());
-            }
+            }*/
+            return "";
         }
 
         private static IEnumerable<object> ToEnumerable(object tuple)
@@ -168,15 +172,16 @@ namespace Chromia.Postchain.Client
 
         public async Task<GTX.PostchainErrorControl> WaitConfirmation(string txRID)
         {
+            /*
             var status = await this.Status(txRID);
 
             var statusString = status.status.ToObject<string>();
-            switch(statusString)
+            switch (statusString)
             {
                 case "confirmed":
-                    return new GTX.PostchainErrorControl() {Error = false, ErrorMessage = ""};
+                    return new GTX.PostchainErrorControl() { Error = false, ErrorMessage = "" };
                 case "rejected":
-                    return new GTX.PostchainErrorControl() {Error = true, ErrorMessage = "Message was rejected"};
+                    return new GTX.PostchainErrorControl() { Error = true, ErrorMessage = "Message was rejected" };
                 case "unknown":
                     await Task.Delay(511);
                     return await this.WaitConfirmation(txRID);
@@ -184,10 +189,11 @@ namespace Chromia.Postchain.Client
                     await Task.Delay(511);
                     return await this.WaitConfirmation(txRID);
                 case "exception":
-                    return new GTX.PostchainErrorControl() {Error = true, ErrorMessage = "HTTP Exception: " + status.message};
+                    return new GTX.PostchainErrorControl() { Error = true, ErrorMessage = "HTTP Exception: " + status.message };
                 default:
-                    return new GTX.PostchainErrorControl() {Error = true, ErrorMessage = "Got unexpected response from server: " + statusString};
-            }
+                    return new GTX.PostchainErrorControl() { Error = true, ErrorMessage = "Got unexpected response from server: " + statusString };
+            }*/
+            return new GTX.PostchainErrorControl();
         }
 
         public async Task<GTX.PostchainErrorControl> PostAndWaitConfirmation(string serializedTransaction, string txRID)
@@ -197,43 +203,30 @@ namespace Chromia.Postchain.Client
             return await this.WaitConfirmation(txRID);
         }
 
-        private async Task<dynamic> Get(string urlBase, string path)
+        private async Task<object> Get(string urlBase, string path)
         {
-            try
+            return 1;
+            /*
+                var rq = UnityWebRequest.Get(urlBase +  path);
+                await rq.SendWebRequest();
+            if (rq.isNetworkError)
             {
-                var url = Url.Combine(urlBase, path);
-
-                var response = await url.GetAsync();
-                var jsonString = await response.Content.ReadAsStringAsync();
-                var jsonObject = JsonConvert.DeserializeObject(jsonString);
-
-                return jsonObject;
+                return JsonConvert.DeserializeObject("{ 'status': 'exception', 'message': '" + rq.error + "' }");
             }
-            catch (FlurlHttpException e)
-            {
-                return JsonConvert.DeserializeObject("{ 'status': 'exception', 'message': '" + e.Message + "' }");
-            }
+            else return JsonConvert.DeserializeObject(rq.downloadHandler.text);
+            */
         }
 
-        private async Task<dynamic> Post(string urlBase, string path, string jsonString)
+        private async Task<object> Post(string urlBase, string path, string jsonString)
         {
-            try
+            /*var rq = UnityWebRequest.Post(urlBase + path, jsonString);
+            await rq.SendWebRequest();
+            if (rq.isNetworkError)
             {
-                var url = Url.Combine(urlBase, path);
-
-                var requestObject =  JsonConvert.DeserializeObject<object>(jsonString);
-                var response = await url.PostJsonAsync(requestObject);
-                
-                var responseString = await response.Content.ReadAsStringAsync();
-                var jsonObject = JsonConvert.DeserializeObject(responseString);
-
-                return jsonObject;
+                return JsonConvert.DeserializeObject("{ 'status': 'exception', 'message': '" + rq.error + "' }");
             }
-            catch (FlurlHttpException e)
-            {
-                return JsonConvert.DeserializeObject("{ '__postchainerror__': true, 'message': '" + e.Message + "' }");
-            }
-            
+            else return JsonConvert.DeserializeObject(rq.downloadHandler.text);*/
+            return 1;
         }
 
         private void ValidateMessageHash(string messageHash)
@@ -253,64 +246,10 @@ namespace Chromia.Postchain.Client
         {
             StringBuilder sb = new StringBuilder();
             foreach (char c in stringValue)
-            { 
-                sb.Append(Convert.ToInt32(c).ToString("X")); 
+            {
+                sb.Append(Convert.ToInt32(c).ToString("X"));
             }
             return sb.ToString();
-        }
-
-        [Obsolete]
-        public async Task<dynamic> GetTransaction(string messageHash, Action<string, dynamic> callback)
-        {
-            ValidateMessageHash(messageHash);
-
-            return await Get(this.UrlBase, "tx/" + this.BlockchainRID + "/" + messageHash);
-        }
-
-        [Obsolete]
-        public async Task<dynamic> GetConfirmationProof(string messageHash, Action<string, string> callback)
-        {
-            ValidateMessageHash(messageHash);
-
-            return await Get(UrlBase, "tx/" + this.BlockchainRID + "/" + messageHash + "/confirmationProof");
-        }
-
-        [Obsolete]
-        private void HandleGetResponse(string error, int statusCode, string responseObject, Action<string, dynamic> callback)
-        {
-            if (error == "")
-            {
-                callback(error, null);
-            } else if (statusCode == 404)
-            {
-                callback("", null);
-            } else if (statusCode != 200)
-            {
-                callback("Unexpected status code from server: " + statusCode, null);
-            } else
-            {
-                try
-                {
-                    callback("", responseObject);
-                } catch (Exception e)
-                {
-                    Console.WriteLine("restclient.handleGetResponse(): Failed to call callback function " + e);
-                }
-            }
-        }
-
-        [Obsolete]
-        private string _b(string stringValue)
-        {
-            int r;
-            if(int.TryParse(stringValue, 
-                    System.Globalization.NumberStyles.HexNumber, 
-                    System.Globalization.CultureInfo.InvariantCulture, out r))
-            {
-                return stringValue;
-            }
-
-            return StringToHex(stringValue);
         }
     }
 }

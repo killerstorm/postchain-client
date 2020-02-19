@@ -39,7 +39,7 @@ namespace Chromia.Postchain.Client.GTV.Merkle
             return CalculateNodeHashInternal(prefix, hashLeft, hashRight);
         }
 
-        public byte[] CalculateLeafHash(dynamic value)
+        public byte[] CalculateLeafHash(object value)
         {
             var gtxValue = Gtx.ArgToGTXValue(value);
             
@@ -63,7 +63,7 @@ namespace Chromia.Postchain.Client.GTV.Merkle
             return HashingFun(buf.ToArray());
         }
 
-        public bool IsContainerProofValueLeaf(dynamic value)
+        public bool IsContainerProofValueLeaf(object value)
         {
             // todo
             return false;

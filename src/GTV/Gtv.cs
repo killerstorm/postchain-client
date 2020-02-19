@@ -5,10 +5,9 @@ namespace Chromia.Postchain.Client.GTV
 {
     public class Gtv
     {
-        private static MerkleHashCalculator HashCalculator = new MerkleHashCalculator(new CryptoSystem());
-        public static byte[] Hash (dynamic obj)
+        public static byte[] Hash (object obj)
         {
-            return MerkleProof.MerkleHashSummary(obj, HashCalculator).MerkleHash;
+            return MerkleProof.MerkleHashSummary(obj, new MerkleHashCalculator(new CryptoSystem())).MerkleHash;
         }
     }    
 }

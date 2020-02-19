@@ -100,7 +100,7 @@ namespace Chromia.Postchain.Client.GTV.Merkle
         {
         }
 
-        public abstract dynamic GetSearchKey();
+        public abstract object GetSearchKey();
     }
 
     public class ArrayPathElement: SearchablePathElement
@@ -111,7 +111,7 @@ namespace Chromia.Postchain.Client.GTV.Merkle
             this.Index = index;
         }
 
-        public override dynamic GetSearchKey()
+        public override object GetSearchKey()
         {
             return Index;
         }
@@ -143,13 +143,13 @@ namespace Chromia.Postchain.Client.GTV.Merkle
 
     public class DictPathElement: SearchablePathElement
     {
-        private dynamic Key;
-        public DictPathElement(SearchablePathElement previous, dynamic key): base(previous)
+        private object Key;
+        public DictPathElement(SearchablePathElement previous, object key): base(previous)
         {
             this.Key = key;
         }
 
-        public override dynamic GetSearchKey()
+        public override object GetSearchKey()
         {
             return this.Key;
         }
@@ -174,7 +174,7 @@ namespace Chromia.Postchain.Client.GTV.Merkle
 
         public override int GetHashCode()
         {
-            return Key;
+            return Key.GetHashCode();
         }
     }
 
@@ -260,7 +260,7 @@ namespace Chromia.Postchain.Client.GTV.Merkle
             return new PathSet(retPaths.ToArray());
         }
 
-        private Path GetTail(dynamic searchKey, Path path)
+        private Path GetTail(object searchKey, Path path)
         {
             if (searchKey is null)
             {
@@ -303,7 +303,7 @@ namespace Chromia.Postchain.Client.GTV.Merkle
             return new PathSet(retPaths.ToArray());
         }
 
-        public PathSet GetTailFromList(dynamic searchKey, Func<dynamic, Path, Path> filterFun)
+        public PathSet GetTailFromList(object searchKey, Func<object, Path, Path> filterFun)
         {
             var retPaths = new List<Path>();
 

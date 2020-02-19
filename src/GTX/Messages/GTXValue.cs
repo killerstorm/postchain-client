@@ -167,14 +167,14 @@ namespace Chromia.Postchain.Client.GTX.ASN1Messages
             return trimmedBytes.ToArray();
         }
 
-        public dynamic[] ToDynamicArray()
+        public object[] ToDynamicArray()
         {
             if (Choice != GTXValueChoice.Array)
             {
-                throw new Exception("Tried to cast non array choice to dynamic array.");
+                throw new Exception("Tried to cast non array choice to object array.");
             }
 
-            List<dynamic> retArr = new List<dynamic>();
+            List<object> retArr = new List<object>();
 
             foreach(var innerGtxValue in Array)
             {
