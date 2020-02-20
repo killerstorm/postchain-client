@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine.Networking;
-//using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Chromia.Postchain.Client
 {
@@ -205,28 +205,27 @@ namespace Chromia.Postchain.Client
 
         private async Task<object> Get(string urlBase, string path)
         {
-            return 1;
-            /*
-                var rq = UnityWebRequest.Get(urlBase +  path);
-                await rq.SendWebRequest();
-            if (rq.isNetworkError)
-            {
-                return JsonConvert.DeserializeObject("{ 'status': 'exception', 'message': '" + rq.error + "' }");
-            }
-            else return JsonConvert.DeserializeObject(rq.downloadHandler.text);
-            */
-        }
-
-        private async Task<object> Post(string urlBase, string path, string jsonString)
-        {
-            /*var rq = UnityWebRequest.Post(urlBase + path, jsonString);
+            
+            var rq = UnityWebRequest.Get(urlBase +  path);
             await rq.SendWebRequest();
             if (rq.isNetworkError)
             {
                 return JsonConvert.DeserializeObject("{ 'status': 'exception', 'message': '" + rq.error + "' }");
             }
-            else return JsonConvert.DeserializeObject(rq.downloadHandler.text);*/
-            return 1;
+            else return JsonConvert.DeserializeObject(rq.downloadHandler.text);
+            
+        }
+
+        private async Task<object> Post(string urlBase, string path, string jsonString)
+        {
+            var rq = UnityWebRequest.Post(urlBase + path, jsonString);
+            await rq.SendWebRequest();
+            if (rq.isNetworkError)
+            {
+                return JsonConvert.DeserializeObject("{ 'status': 'exception', 'message': '" + rq.error + "' }");
+            }
+            else return JsonConvert.DeserializeObject(rq.downloadHandler.text);
+            
         }
 
         private void ValidateMessageHash(string messageHash)
