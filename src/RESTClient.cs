@@ -5,6 +5,7 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
+using UnityEngine;
 
 namespace Chromia.Postchain.Client
 {
@@ -205,9 +206,11 @@ namespace Chromia.Postchain.Client
 
         private async Task<object> Get(string urlBase, string path)
         {
-            
+            Debug.Log("Get" + urlBase + path);
             var rq = UnityWebRequest.Get(urlBase +  path);
+            Debug.Log("created rq");
             await rq.SendWebRequest();
+            Debug.Log("got SendWebRequest");
             if (rq.isNetworkError)
             {
                 return JsonConvert.DeserializeObject("{ 'status': 'exception', 'message': '" + rq.error + "' }");
