@@ -172,9 +172,9 @@ namespace Chromia.Postchain.Client
 
         public async Task<GTX.PostchainErrorControl> WaitConfirmation(string txRID)
         {
-            /*
+            
             var status = await this.Status(txRID);
-
+            /*
             var statusString = status.status.ToObject<string>();
             switch (statusString)
             {
@@ -198,7 +198,7 @@ namespace Chromia.Postchain.Client
 
         public async Task<GTX.PostchainErrorControl> PostAndWaitConfirmation(string serializedTransaction, string txRID)
         {
-            await this.PostTransaction(serializedTransaction);
+            //await this.PostTransaction(serializedTransaction);
 
             return await this.WaitConfirmation(txRID);
         }
